@@ -9,6 +9,10 @@ const int adStartYear = 1918;
 const int adStartMonth = april;
 const int adStartDay = 13;
 
+const int adEndYear = 2044;
+const int adEndMonth = april;
+const int adEndDay = 12;
+
 const int bsStartYear = 1975;
 const int bsStartMonth = 1; 
 const int bsStartDay = 1;
@@ -16,10 +20,6 @@ const int bsStartDay = 1;
 const int bsEndYear = 2100;
 const int bsEndMonth = 12;
 const int bsEndDay = 30;
-
-const int adEndYear = 2044;
-const int adEndMonth = april;
-const int adEndDay = 12;
 
 const int daysFromRef = 103;
 const int totalDays = 44510; 

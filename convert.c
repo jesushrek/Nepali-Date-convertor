@@ -38,7 +38,27 @@ static const long long countDaysFromRef( int year, int month, int day )
     return days;
 }
 
-const static Date adToBs( int year, int month, int day )
+static const long long bsCountDaysFromRef(int year, int month, int day)
+{ 
+    long long days = 0;
+    int y = 0;
+    for(; y < (year - bsStartYear); ++y)
+    { 
+        int m = 0;
+        for(;m < 12; ++m)
+            days += BSdate[y][m];
+    }
+
+    int mo = 0;
+    for(; mo < (month - 1); ++mo)
+        days += BSdate[year - bsStartYear][mo];
+    //i am off by one for some reason
+
+    days += (long long)day - 1;
+    return days;
+}
+
+static const Date adToBs( int year, int month, int day )
 { 
     long long remainingDays = countDaysFromRef(year, month, day) - daysFromRef;
     int bsYear = bsStartYear;
@@ -77,9 +97,39 @@ const static Date adToBs( int year, int month, int day )
     return converted;
 }
 
+static const Date bsToAd(int year, int month, int day)
+{ 
+    long long remainingDays = bsCountDaysFromRef(year, month, day);
+    int adYear = adStartYear;
+    while(adYear <= adEndYear)
+    { 
+        int daysInCurrentYear = (adYear == adStartYear)? -(adStartDay) : 0;
+        int m = (adYear == adStartYear)? 3 : 0;
+        for(; m < 12; ++m)
+            daysInCurrentYear += returnDaysOfMonth(m, isLeapAd(adYear));
+        if(remainingDays < daysInCurrentYear)
+            break;
+        remainingDays -= daysInCurrentYear;
+        ++adYear;
+    }
+    Date converted = { 0, 0, 0 };
+    int m = 0;
+    for(; m < 12; ++m)
+    { 
+        int daysInMonth = returnDaysOfMonth(m, isLeapAd(adYear));
+        if(remainingDays < daysInMonth)
+        { 
+            converted.year = adYear;
+            converted.month = m + 1;
+            converted.day = remainingDays;
+            break;
+        }
+    }
+    return converted;
+}
+
 int main()
 { 
-    Date date = adToBs(2025, 11, 12);
-    printf("2025, 11, 12 converts to %d, %d, %d", date.year, date.month, date.day);
-    return 0;
+    Date day = bsToAd(2063, 10, 13);
+    printf(" 2063 10 13 converts to %d %d %d", day.year, day.month, day.day);
 }
