@@ -54,7 +54,7 @@ static const long long bsCountDaysFromRef(int year, int month, int day)
         days += BSdate[year - bsStartYear][mo];
     //i am off by one for some reason
 
-    days += (long long)day - 1;
+    days += (long long)day;
     return days;
 }
 
@@ -105,31 +105,37 @@ static const Date bsToAd(int year, int month, int day)
     { 
         int daysInCurrentYear = (adYear == adStartYear)? -(adStartDay) : 0;
         int m = (adYear == adStartYear)? 3 : 0;
+
         for(; m < 12; ++m)
             daysInCurrentYear += returnDaysOfMonth(m, isLeapAd(adYear));
+
         if(remainingDays < daysInCurrentYear)
             break;
+
         remainingDays -= daysInCurrentYear;
         ++adYear;
     }
+
     Date converted = { 0, 0, 0 };
+
     int m = 0;
     for(; m < 12; ++m)
     { 
-        int daysInMonth = returnDaysOfMonth(m, isLeapAd(adYear));
-        if(remainingDays < daysInMonth)
+        int monthDays = returnDaysOfMonth(m, isLeapAd(adYear));
+        if(remainingDays < monthDays)
         { 
             converted.year = adYear;
             converted.month = m + 1;
-            converted.day = remainingDays;
+            converted.day = remainingDays - 1;
             break;
         }
+        remainingDays -= monthDays;
     }
     return converted;
 }
 
 int main()
 { 
-    Date day = bsToAd(2063, 10, 13);
-    printf(" 2063 10 13 converts to %d %d %d", day.year, day.month, day.day);
+    Date day = bsToAd(2082, 7, 28);
+    printf("%d, %d, %d", day.year, day.month, day.day);
 }
