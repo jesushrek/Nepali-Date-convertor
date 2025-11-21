@@ -1,31 +1,23 @@
-/* 
- * All the dates I stole from here
- * https://github.com/srishanbhattarai/nepcal/blob/master/nepcal/constants.go
- */
+#ifndef DATE_H
+#define DATE_H
+#define April 3
 
-#define april 4
+typedef struct 
+{ 
+    int year, month, day;
 
-const int adStartYear = 1918;
-const int adStartMonth = april;
-const int adStartDay = 13;
+}Date;
 
-const int adEndYear = 2044;
-const int adEndMonth = april;
-const int adEndDay = 12;
+const Date adLBound = { 1918, April, 13 };
+const Date adUBound = { 2044, April, 12 };
 
-const int bsStartYear = 1975;
-const int bsStartMonth = 1; 
-const int bsStartDay = 1;
+const Date bsLBound = { 1975, 1, 1 };
+const Date bsUBound = { 2100, 11, 30 };
 
-const int bsEndYear = 2100;
-const int bsEndMonth = 12;
-const int bsEndDay = 30;
+const int dateOffset = 103;
 
-const int daysFromRef = 103;
-const int totalDays = 44510; 
-
-const int BSdate[126][12] = { 
-    {31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30}, //1975
+int  bsDaysInMonthsByYear[][12] = { 
+    {31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30},
     {31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31},
     {30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31},
     {31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30},
@@ -150,5 +142,7 @@ const int BSdate[126][12] = {
     {31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30},
     {31, 31, 32, 31, 31, 31, 29, 30, 29, 30, 29, 31},
     {31, 31, 32, 31, 31, 31, 30, 29, 29, 30, 30, 30},
-    {31, 32, 31, 32, 30, 31, 30, 29, 30, 29, 30, 30} //2100
+    {31, 32, 31, 32, 30, 31, 30, 29, 30, 29, 30, 30},
 };
+
+#endif
