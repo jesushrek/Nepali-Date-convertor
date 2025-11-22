@@ -5,12 +5,17 @@
 #include "date.h"
 
 static const bool isLeapAd(int year)
-{ 
+{
     return (year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0);
 }
 
-static const int daysInMonth( int m, bool isLeap )
+static const int daysInMonth(int m, bool isLeap)
 { 
+    if( m > 12 || m < 0 )
+    { 
+        printf("\nError: %d is not a valid month. \n", m + 1);
+        return -5000;
+    }
     int days[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     if( m == 1 && isLeap )
         return 29;
@@ -21,9 +26,12 @@ static const int daysInMonth( int m, bool isLeap )
 static const int bsDaysInYear( int year )
 { 
     if( year > bsUBound.year || year < bsLBound.year )
-        return 5000;
+    { 
+        printf("\nError: Can only convert dates from %d to %d\n", bsLBound.year, bsUBound.year);
+        return -5000;
+    }
 
-    int indexYear = year - bsLBound.year;
+    int indexYear = (year - bsLBound.year);
     int days = 0;
     int m = 0;
 
@@ -33,88 +41,62 @@ static const int bsDaysInYear( int year )
     return days;
 }
 
-
-static const long long bsToDay( Date* day )
+static const long long bsToDay( Date* bsDate )
 { 
-    if( day->year < bsLBound.year || day->year > bsUBound.year )
-        return -100;
+    if( bsDate->year > bsUBound.year || bsDate->year < bsLBound.year )
+    { 
+        printf("\nError: Can only convert dates from %d to %d\n", bsLBound.year, bsUBound.year);
+        return (long long)-5000;
+    }
 
     long long totalDays = 0;
     int y = bsLBound.year;
-    for(; y < day->year; ++y)
+    for(; y < bsDate->year; ++y)
         totalDays += bsDaysInYear(y);
 
-    int m = 0;
-    for(; m < day->month; ++m)
-        totalDays += bsDaysInMonthsByYear[0][m];
+    const int currentIndex = (bsDate->year - bsLBound.year);
 
-    return totalDays + (long long)day->day;
+    int m = 0;
+    for(; m < bsDate->month; ++m)
+        totalDays += bsDaysInMonthsByYear[currentIndex][m];
+
+    //fix the off by one
+    return totalDays + (long long)bsDate->day - 1;
 }
 
-
-static const long long adToDay( Date* day )
-
+static const long long adToDay( Date* adDate )
 { 
-    if( day->year < adLBound.year || day->year > adUBound.year)
-        return -100;
+    if( adDate->year > adUBound.year || adDate->year < adLBound.year )
+    {
+        printf("\nError: Can only convert dates from %d to %d\n", adLBound.year, adUBound.year);
+        return (long long)-5000;
+    }
+
     long long totalDays = 0;
     int y = adLBound.year;
-    for(; y < day->year; ++y)
+    for(; y < adDate->year; ++y)
         totalDays += isLeapAd(y)? 366 : 365;
 
     int m = 0;
-    for(; m < day->month; ++m)
-        totalDays += daysInMonth(m, isLeapAd(day->year));
+    for(; m < adDate->month; ++m)
+        totalDays += daysInMonth(m, isLeapAd(adDate->year));
 
     totalDays -= dateOffset;
-    return totalDays + (long long)day->day;
+    return totalDays + (long long)adDate->day;
 }
 
-static const Date bsToAd( Date* unit ) 
-{ 
+static const Date bsToAd( Date* bsDate )
+{
     Date converted = { -1, -1, -1 };
-    int remainingDays = adToDay(unit);
-    int yearIndex = bsLBound.year;
-    if( remainingDays < 0 )
-        converted;
-    while(true)
-    { 
-        int daysInYear = bsDaysInYear(yearIndex);
-        if( remainingDays < daysInYear )
-            break;
+    long long remainingDays = bsToDay(bsDate);
+    if(remainingDays < 0)
+        return converted;
 
-        remainingDays -= daysInYear;
-        ++yearIndex;
-    }
-
-
-    int m = 0;
-    for(; m < 12; ++m)
-    {
-        int daysIn = bsDaysInMonthsByYear[yearIndex - bsLBound.year][m];
-        if( remainingDays < daysIn )
-        { 
-            converted.year = yearIndex;
-            converted.month = m;
-            converted.day = remainingDays + 1;
-            break;
-        }
-        remainingDays -= daysIn;
-    }
-    return converted;
-}
-
-static const Date adToBs( Date* unit )
-{ 
-    Date converted = { -1, -1, -1 };
-    int remainingDays = bsToDay(unit);
     int yearIndex = adLBound.year;
-    if( remainingDays < 0 )
-        converted;
     while(true)
     { 
-        int daysInYear; 
-        if( yearIndex == adLBound.year )
+        int daysInYear = 0;
+        if( yearIndex == adLBound.year)
             daysInYear = (365 - dateOffset);
         else 
             daysInYear = isLeapAd(yearIndex)? 366 : 365;
@@ -126,17 +108,51 @@ static const Date adToBs( Date* unit )
         ++yearIndex;
     }
 
-
     int m = 0;
     for(; m < 12; ++m)
     {
-        int daysIn = daysInMonth(m, isLeapAd(unit->year));
+        int daysIn = daysInMonth(m, isLeapAd(yearIndex));
         if( remainingDays < daysIn )
         { 
             converted.year = yearIndex;
             converted.month = m;
-            /* fix the off by one */
-            converted.day = remainingDays - 1;
+            converted.day = remainingDays;
+            break;
+        }
+        remainingDays -= daysIn;
+    }
+
+    return converted;
+}
+
+static const Date adToBs( Date* adDate )
+{
+    Date converted = { -1, -1, -1 };
+    int remainingDays = adToDay(adDate);
+
+    int yearIndex = bsLBound.year;
+    if( remainingDays < 0 )
+        converted;
+
+    while(true)
+    {
+        int daysInYear = bsDaysInYear(yearIndex);
+        if( remainingDays < daysInYear )
+            break;
+
+        remainingDays -= daysInYear;
+        ++yearIndex;
+    }
+
+    int m = 0;
+    for(; m < 12; ++m)
+    { 
+        int daysIn = bsDaysInMonthsByYear[yearIndex - bsLBound.year][m];
+        if( remainingDays < daysIn )
+        {
+            converted.year = yearIndex;
+            converted.month = m;
+            converted.day = remainingDays + 1;
             break;
         }
         remainingDays -= daysIn;
@@ -144,17 +160,97 @@ static const Date adToBs( Date* unit )
     return converted;
 }
 
-void printDate( Date* day )
-{ 
-    printf("%d-%02d-%02d\n", day->year, day->month + 1, day->day);
+static const bool isValidDateAd( const Date* adDate )
+{   
+    if( adDate->month > 11 || adDate->month < 0 )
+        return false;
+
+    if(daysInMonth(adDate->month, isLeapAd(adDate->year)) < adDate->day)
+        return false;
+
+    if( adDate->day < 0 )
+        return false;
+
+
+    if( adDate->year > adUBound.year || adDate->year < adLBound.year )
+        return false;
+
+    if( adDate->year == adLBound.year )
+    { 
+        if( adDate->month < adLBound.month )
+            return false;
+
+        if( adDate->month == adLBound.month )
+            if(adDate->day < adLBound.day)
+                return false;
+    }
+
+    if( adDate->year == adUBound.year )
+    { 
+        if( adDate->month > adUBound.month )
+            return false;
+
+        if( adDate->month == adUBound.month )
+            if(adDate->day > adUBound.day)
+                return false;
+    }
+
+    return true;
 }
+
+static const bool isValidDateBs( const Date* bsDate )
+{   
+    const int index = (bsDate->year - bsLBound.year);
+
+    if( bsDate->month > 11 || bsDate->month < 0 )
+        return false;
+
+    if(bsDaysInMonthsByYear[index][bsDate->month] < bsDate->day)
+        return false;
+
+    if( bsDate->day < 0 )
+        return false;
+
+
+    if( bsDate->year > bsUBound.year || bsDate->year < bsLBound.year )
+        return false;
+
+    if( bsDate->year == bsLBound.year )
+    { 
+        if( bsDate->month < bsLBound.month )
+            return false;
+
+        if( bsDate->month == bsLBound.month )
+            if(bsDate->day < bsLBound.day)
+                return false;
+    }
+
+    if( bsDate->year == bsUBound.year )
+    { 
+        if( bsDate->month > bsUBound.month )
+            return false;
+
+        if( bsDate->month == bsUBound.month )
+            if(bsDate->day > bsUBound.day)
+                return false;
+    }
+
+    return true;
+}
+
+
+void printDate( const Date* unit )
+{ 
+    printf("%d-%02d-%02d", unit->year, unit->month + 1, unit->day);
+}
+
 int main( int argc, char* argv[])
 {
     if( argc != 5 )
     {
         printf("Usage: %s [ -a | -b ] YYYY MM DD\n", argv[0]);
-        printf("  -a: Convert input date (BS) to AD (Gregorian)\n");
-        printf("  -b: Convert input date (AD) to BS (Nepali)\n");
+        printf("  -bta: Convert input date (BS) to AD (Gregorian)\n");
+        printf("  -atb: Convert input date (AD) to BS (Nepali)\n");
         return 1;
     }
 
@@ -165,17 +261,37 @@ int main( int argc, char* argv[])
 
     Date converted = { -1, -1, -1 };
 
-    if(strcmp(argv[1], "-a") == 0) 
+    if(strcmp(argv[1], "-bta") == 0)
     {
-        converted = bsToAd(&inputDate);
+        if(isValidDateBs(&inputDate))
+        {
+            converted = bsToAd(&inputDate);
+        }
+        else
+        {
+            printDate(&inputDate);
+            printf(" Is invalid. Error: Invalid Date\n");
+            return 1;
+        }
     }
-    else if(strcmp(argv[1], "-b") == 0) 
+    else if(strcmp(argv[1], "-atb") == 0)
     {
         converted = adToBs(&inputDate);
+        if(isValidDateAd(&inputDate))
+        {
+            converted = bsToAd(&inputDate);
+            printf("\n");
+        }
+        else
+        {
+            printDate(&inputDate);
+            printf(" is invalid. Error: Invalid Date\n");
+            return 1;
+        }
     }
     else
     {
-        printf("Error: Invalid flag '%s'. Use -a or -b.\n", argv[1]);
+        printf("\nError: Invalid flag '%s'. Use -atb or -bta.\n", argv[1]);
         return 1;
     }
 
@@ -185,9 +301,10 @@ int main( int argc, char* argv[])
     }
     else
     {
-        printf("Error: Date is outside of my supported range :(\n");
+        printf("\nError: Date is outside of my supported range :(\n");
         return 1;
     }
 
     return 0;
 }
+
