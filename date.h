@@ -1,6 +1,50 @@
 #ifndef DATE_H
 #define DATE_H
-#define April 3
+
+typedef enum 
+{ 
+    January, 
+    February, 
+    March,
+    April,
+    May,
+    June, 
+    July,
+    August,
+    September, 
+    October,
+    November, 
+    December,
+}EnumMonths;
+
+typedef enum 
+{ 
+    Sunday = 0,
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+}EnumDays;
+
+typedef enum 
+{ 
+    Baishakh,
+    Jestha,
+    Ashadh,
+    Shrawan,
+    Bhadra,
+    Ashwin,
+    Kartik,
+    Mangsir,
+    Poush,
+    Magh,
+    Falgun,
+    Chaitra,
+}EnumMonthsBs;
+
+
 
 typedef struct 
 { 
@@ -11,8 +55,8 @@ typedef struct
 const Date adLBound = { 1918, April, 13 };
 const Date adUBound = { 2044, April, 12 };
 
-const Date bsLBound = { 1975, 1, 1 };
-const Date bsUBound = { 2100, 11, 30 };
+const Date bsLBound = { 1975, Baishakh, 1 };
+const Date bsUBound = { 2100, Chaitra, 30 };
 
 const int dateOffset = 103;
 
