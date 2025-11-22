@@ -276,10 +276,9 @@ int main( int argc, char* argv[])
     }
     else if(strcmp(argv[1], "-atb") == 0)
     {
-        converted = adToBs(&inputDate);
         if(isValidDateAd(&inputDate))
         {
-            converted = bsToAd(&inputDate);
+            converted = adToBs(&inputDate);
             printf("\n");
         }
         else
