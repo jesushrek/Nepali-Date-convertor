@@ -242,7 +242,6 @@ int main( int argc, char* argv[])
         printf("Usage: %s [ -atb | -bta ] YYYY MM DD\n", argv[0]);
         printf("  -bta: Convert input date (BS) to AD (Gregorian)\n");
         printf("  -atb: Convert input date (AD) to BS (Nepali)\n");
-        printf("  -today: Get today's Date in Bs\n");
         return 1;
     }
     Date inputDate = {};
